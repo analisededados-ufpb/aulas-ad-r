@@ -1,0 +1,102 @@
+---
+title: "Apresentação da disciplina"
+author: "Prof. Marcus Carvalho"
+date: "Análise de Dados I - 2018.1"
+output:
+  beamer_presentation: default
+  ioslides_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## Conteúdo - Unidade 1
+
+- Introdução a análise de dados
+    - Conceitos básicos
+    - Introdução a ferramentas: R, Rmarkdown, tidyverse
+
+- Análise exploratória de dados
+    - Estatística descritiva
+    - Visualização básica
+    - Correlação
+
+
+## Conteúdo - Unidade 2
+        
+- Inferência estatística
+    - Amostragem
+    - Intervalos de confiança
+    - Testes de hipótese
+
+- Regressão
+    - Regressão linear simples
+    - Regressão linear multivariada
+    - Regressão logística
+
+
+## Conteúdo - Unidade 3
+
+- Agrupamento
+    - Medidas de similaridade e divergência
+    - Agrupamento com K-means
+    - Agrupamento hierárquico
+
+- Visualização de dados
+
+- Projeto de análise de dados
+
+
+## Avaliações
+
+- Unidades 1 e 2:
+    - Atividades práticas de análise de dados (relatórios)
+    - Atividades em sala de aula / laboratório
+  
+- Unidade 3:
+    - Projeto de análise de dados (individual)
+    
+
+## Material - Referências básicas
+
+- R for Data Science ([online](http://r4ds.had.co.nz/))
+- Ciência de Dados com R ([online](https://cdr.ibpad.com.br/))
+- The Data Science Design Manual ([comprar](https://www.amazon.com.br/Science-Design-Manual-Texts-Computer-ebook/dp/B073N5ZDMK); [slides e video-aulas](http://www3.cs.stonybrook.edu/~skiena/data-manual/lectures/))
+- Modern Dive: An Introduction to Statistical and Data sciences via R ([online](https://ismayc.github.io/moderndiver-book); [slides](https://ismayc.github.io/soc301_s2017))
+- Introductory Statistics with Randomization and Simulation (pdf)
+
+
+## Material - Referências complementares
+    
+- Exploratory Data Analysis with R (pdf)
+- R Programming for Data Science (pdf)
+- An Introduction to Statistical Learning (pdf)
+- The Art of Data Science (pdf)
+- OpenIntro Statistics (pdf)
+- Think Stats: Exploratory Data Analysis in Python (pdf)
+
+
+## Ambientes virtuais
+
+- [Google Classroom](https://classroom.google.com/)
+    - Avisos, dúvidas, discussões, materiais, atividades
+    - Precisa estar logado com a conta do DCX
+    - Código da turma: **je6ak2h**
+    
+- [GitHub Classroom](https://classroom.github.com/)
+    - Material para atividades, envio de código
+    - Criem uma conta no GitHub e aprendam git!
+    
+
+## Instalar e começar a brincar
+
+- [R](https://cran.r-project.org/): linguagem de programação para análise de dados
+- [Rstudio](https://www.rstudio.com): IDE para programar em R
+- [tidyverse](https://www.tidyverse.org): conjunto de pacotes R extremamente úteis
+    - [dplyr](https://dplyr.tidyverse.org/): manipulação de dados
+    - [tidyr](https://tidyr.tidyverse.org/): organização de dados
+    - [ggplot2](https://ggplot2.tidyverse.org): geração de gráficos
+    - [readr](https://readr.tidyverse.org/): carregamento de dados
+- [Rmarkdown](https://rmarkdown.rstudio.com/): geração de documentos / relatórios
