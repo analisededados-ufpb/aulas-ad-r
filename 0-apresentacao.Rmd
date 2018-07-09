@@ -3,8 +3,8 @@ title: "Apresentação da disciplina"
 author: "Prof. Marcus Carvalho"
 date: "Análise de Dados I - 2018.1"
 output:
-  beamer_presentation: default
-  ioslides_presentation: default
+  ioslides_presentation:
+    widescreen: true
 ---
 
 ```{r setup, include=FALSE}
@@ -100,3 +100,4 @@ knitr::opts_chunk$set(echo = FALSE)
     - [ggplot2](https://ggplot2.tidyverse.org): geração de gráficos
     - [readr](https://readr.tidyverse.org/): carregamento de dados
 - [Rmarkdown](https://rmarkdown.rstudio.com/): geração de documentos / relatórios
+
