@@ -5,7 +5,6 @@ date: "Análise de Dados I - 2018.1"
 output:
   ioslides_presentation:
       widescreen: true
-
 ---
 
 ```{r setup, include=FALSE}
@@ -107,8 +106,8 @@ Habilidades necessárias:
 
 > - Avanços computacionais permitem novas formas de analisar dados em larga escala (Cloud Computing, Machine Learning)
 
-> - Sucesso de análises de dados em grandes empresas serviu de modelo para popularizar a ciência de dados (Google, Facebook, Amazon, predição em esportes, eleições)
-> - <div align='center'><img src="figs/data_volume_growth.jpg" width=50%></div>
+> - Sucesso de análises de dados em grandes empresas serviu de modelo para popularizar a ciência de dados (Google, Facebook, Amazon)
+> - <div align='center'><img src="figs/data_volume_growth.jpg" width=55%></div>
 
 
 ## Apreciando dados
@@ -150,10 +149,9 @@ Cientistas da computação geralmente não apreciam dados
 
 - Ciência de dados: geração de dados em larga escala para realizar novas descobertas ao analisá-los.
 
-Duas formas importantes de pensar:
-
-- Dado um problema, quais dados disponíveis ajudarão a resolvê-lo?
-- Dado um conjunto de dados, que problemas interessantes se aplicarão a ele?
+> - Duas formas importantes de pensar:
+>     - Dado um problema, quais dados disponíveis ajudarão a resolvê-lo?
+>     - Dado um conjunto de dados, que problemas interessantes se aplicarão a ele?
 
 
 ## Genialidade x Sabedoria
@@ -161,16 +159,16 @@ Duas formas importantes de pensar:
 - Desenvolvedores são contratados para produzir código
 - Cientistas de dados são contratados para produzir *insights*
 
-- Genialidade é saber encontrar a resposta correta
-- **Sabedoria é saber evitar as respostas erradas!**
+> - Genialidade é saber encontrar a resposta correta
+> - **Sabedoria é saber evitar as respostas erradas!**
 
-- A ciência de dados se beneficia mais de sábios que de gênios
+> - A ciência de dados se beneficia mais de sábios que de gênios
 
-- A sabedoria vem de:
-    - Experiência
-    - Conhecimento geral
-    - Ouvir os outros
-    - Humildade: observar quanto, como e porque você errou
+> - A sabedoria vem de:
+>     - Experiência
+>     - Conhecimento geral
+>     - Ouvir os outros
+>     - Humildade: observar quanto, como e porque você errou
 
 
 ## Desenvolvendo a curiosidade
@@ -212,16 +210,16 @@ Duas formas importantes de pensar:
 >- Como os filmes de Hollywood se comparam a filmes indianos em termos de: avaliações, orçamento, rendimento? Filmes americanos são mais bem avaliados do que estrangeiros?
 
 
-## IMDb: Perguntas? [2/2] {.build}
+## IMDb: Perguntas? [2/2]
 
 - Como é a rede "social" da participação de atores em filmes?
     - Exemplo: [grafo que indica graus a partir de Kevin Bacon](https://oracleofbacon.org)
 
-- Qual é a distribuição de idade de atores e atrizes em filmes? Atrizes tendem a ser mais jovens que atores?
+>- Qual é a distribuição de idade de atores e atrizes em filmes? Atrizes tendem a ser mais jovens que atores?
 
-- Quais gêneros de filmes recebem as melhores avaliações? Quais gêneros são mais caros? Quais faturam mais?
+>- Quais gêneros de filmes recebem as melhores avaliações? Quais gêneros são mais caros? Quais faturam mais?
 
-- Qual a probabilidade de uma pessoa gostar de um filme? (Exemplo: recomendações do Netflix)
+>- Qual a probabilidade de uma pessoa gostar de um filme? (Exemplo: recomendações do Netflix)
 
 ## Referências
 
