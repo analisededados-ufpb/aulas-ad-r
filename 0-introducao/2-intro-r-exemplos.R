@@ -215,3 +215,5 @@ plot(order(notas_alunos$media), notas_alunos$media)
 # Pizza
 pie(table(notas_alunos$situacao))
 
+# Para as proximas atividades, instalar pacotes rodando:
+# install.packages("tidyverse")
