@@ -1,0 +1,187 @@
+---
+title: "Introdução ao tidyverse"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+  html_notebook:
+    toc: yes
+    toc_float: yes
+---
+
+# Apresentação
+
+[*tidyverse*](https://www.tidyverse.org/) é um conjunto de pacotes R para data science, usados para carregar, organizar, manipular e visualizar dados. Suas funções geralmente são mais amigáveis do que as funções do R "base".
+
+Alguns dos pacotes do tidyverse que vamos explorar são:
+
+- readr: carregamento de dados;
+- dplyr: manipulação de dados;
+- tidyr: organização de dados;
+- stringr: manipulação de strings;
+- ggplot2: visualização de dados;
+- rmarkdown: geração de relatórios.
+
+Nesta disciplina nós vamos realizar nossas análises usando prioritariamente estes pacotes.
+Para carregar os pacotes tidyverse, rode:
+
+```{r setup, message=FALSE}
+library(tidyverse)
+```
+
+# Carregando dados
+
+Este comando do pacote `readr` é usado para carregar arquivos `.csv`:
+
+```{r, message=FALSE}
+so_20171 <- read_csv("../dados/notas_so_20171.csv")
+```
+
+Este data frame possui as notas de Sistemas Operacionais no período 2017.1. Podemos olhar a estrutura do data frame com o comando `glimpse`:
+
+```{r}
+glimpse(so_20171)
+```
+
+# Manipulando data frames
+
+Como já vimos antes, se quisermos calcular a média das notas de cada unidade desta turma, podemos fazer:
+
+```{r}
+mean(so_20171$nota1)
+mean(so_20171$nota2)
+mean(so_20171$nota3)
+mean(so_20171$nota4)
+```
+
+Suponha que queremos calcular a média das notas de cada uma das 4 unidades para todas as turmas de SO nos últimos 10 períodos. Para fazer do modo acima, precisaríamos de pelo menos 40 linhas de código (10 turmas, 4 unidades cada). Isso não parece muito interessante. O jeito "tidyverse"" de fazer isso é juntando todos os dados em uma única tabela.
+
+Por exemplo, vamos carregar também as notas da turma de SO 2017.2.
+
+```{r, message=FALSE}
+so_20172 <-read_csv("../dados/notas_so_20172.csv")
+
+glimpse(so_20172)
+```
+
+## Adicionando nova coluna
+
+Note que a sua estrutura é semelhante à do data frame anterior. Desta forma, podemos juntá-los em um único data frame. Antes disso, temos que adicionar novas colunas que identifique a discplina e a qual período as notas se referem, com o comando `mutate` do `dplyr`:
+
+```{r}
+so_20171 <- so_20171 %>%
+  mutate(disciplina = "Sistemas Operacionais", periodo = "2017.1")
+
+so_20172 <- so_20172 %>%
+  mutate(disciplina = "Sistemas Operacionais", periodo = "2017.2")
+
+glimpse(so_20171)
+glimpse(so_20172)
+```
+
+## Juntando data frames
+
+Agora podemos junta os dois usando o comando `bind_rows` do pacote `dpyr`, que junta as linhas de data frames que possuem as mesmas colunas:
+
+```{r}
+notas_so <- bind_rows(so_20171, so_20172)
+
+notas_so
+```
+
+Para calcular a média geral das notas de cada unidade, podemos agora aplicar para a tabela inteira:
+
+```{r}
+mean(notas_so$nota1)
+mean(notas_so$nota2)
+mean(notas_so$nota3)
+mean(notas_so$nota4)
+```
+
+E se quisermos saber as médias de cada período específico, usando a tabela com todas as notas? Vamos mostrar duas formas de fazer isso.
+
+## Filtrando dados
+
+O comando `filter` do dplyr é usado para filtrar dados com base nos valores contidos nas colunas.
+
+Por exemplo, se quisermos filtrar os dados de cada período e em seguida calcular a média da unidade 1:
+
+```{r}
+notas_so_20171 <- filter(notas_so, periodo == "2017.1")
+mean(notas_so_20171$nota1)
+
+notas_so_20172 <- filter(notas_so, periodo == "2017.2")
+mean(notas_so_20172$nota1)
+```
+
+Da mesma forma, podemos ver a fração de alunos com nota acima da média na unidade 1:
+
+```{r}
+aprovados_so_20171 <- filter(notas_so, periodo == "2017.1", nota1 >= 7)
+nrow(aprovados_so_20171) / nrow(notas_so_20171)
+
+aprovados_so_20172 <- filter(notas_so, periodo == "2017.2", nota1 >= 7)
+nrow(aprovados_so_20172) / nrow(notas_so_20172)
+```
+
+Existe uma forma mais adequada para fazer esse tipo de cálculo agrupado por categoria.
+
+## Agrupando por coluna e sumarizando dados
+
+A função `group_by` agrupa os dados de acordo com categorias definidas pelas colunas e aplica funções para cada grupo. A função `summarise` aplica uma função para cada grupo de dados, gerando novas colunas no data frame.
+
+Vamos usar como exemplo o cálculo da média para cada unidade, agrupado por período:
+
+```{r}
+notas_so %>%
+  group_by(periodo) %>%
+  summarise(media_unidade1 = mean(nota1),
+            media_unidade2 = mean(nota2),
+            media_unidade3 = mean(nota3),
+            media_unidade4 = mean(nota4))
+```
+
+Quem já mexeu com banco de dados deve estar achando familiar a sintaxe do `group_by`; a ideia é tornar mais intuitiva a análise.
+
+Outra novidade é o símbolo `%>%`, que representa o *pipe* em R. Ou seja, a saída do comando do lado esquerdo é usada como entrada para o comando da direita.
+
+Exemplo -- gerar 100 números aleatórios de 1 a 10, calcula quantas vezes cada um aparece, calcula a fração que cada um aparece e ordena da maior para a menor frequência).
+
+```{r}
+sample.int(10, 100, replace = TRUE) %>%
+  table() %>%
+  prop.table() %>%
+  sort(decreasing = TRUE)
+```
+
+É igual a:
+
+```{r}
+sort(prop.table(table(sample.int(10, 100, replace = TRUE))), decreasing = TRUE)
+```
+
+Voltando... Como fazemos para calcular a fração de aprovados na unidade 1 para cada período?
+
+```{r}
+notas_so %>%
+  group_by(periodo) %>%
+  summarise(frac_aprovados = sum(nota1 >= 7) / n())
+```
+
+Ainda temos um incoveniente: ainda precisamos fazer cálculos especificando cada unidade que pretendemos observar. Vamos ver a seguir como organizar os dados de uma forma ainda melhor.
+
+# Organizando dados (tidy data)
+
+Vamos carregar os dados de outras duas disciplinas, Sistemas Distribuídos e Avaliação de Desempenho, aproveitando para adicionar o nome da disciplina e o período no data frame:
+
+```{r, message=FALSE}
+sd_20171 <- read_csv("../dados/notas_sd_20172.csv") %>%
+  mutate()
+glimpse(sd_20171)
+
+ads_20171 <- read_csv("../dados/notas_ads_20171.csv")
+glimpse(ads_20171)
+```
+
+Podemos juntar as notas de todas as di
