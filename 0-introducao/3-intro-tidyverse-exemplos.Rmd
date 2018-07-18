@@ -49,10 +49,10 @@ glimpse(so_20171)
 Como já vimos antes, se quisermos calcular a média das notas de cada unidade desta turma, podemos fazer:
 
 ```{r}
-mean(so_20171$nota1)
-mean(so_20171$nota2)
-mean(so_20171$nota3)
-mean(so_20171$nota4)
+mean(so_20171$nota_1)
+mean(so_20171$nota_2)
+mean(so_20171$nota_3)
+mean(so_20171$nota_4)
 ```
 
 Suponha que queremos calcular a média das notas de cada uma das 4 unidades para todas as turmas de SO nos últimos 10 períodos. Para fazer do modo acima, precisaríamos de pelo menos 40 linhas de código (10 turmas, 4 unidades cada). Isso não parece muito interessante. O jeito "tidyverse"" de fazer isso é juntando todos os dados em uma única tabela.
@@ -93,10 +93,10 @@ notas_so
 Para calcular a média geral das notas de cada unidade, podemos agora aplicar para a tabela inteira:
 
 ```{r}
-mean(notas_so$nota1)
-mean(notas_so$nota2)
-mean(notas_so$nota3)
-mean(notas_so$nota4)
+mean(notas_so$nota_1)
+mean(notas_so$nota_2)
+mean(notas_so$nota_3)
+mean(notas_so$nota_4)
 ```
 
 E se quisermos saber as médias de cada período específico, usando a tabela com todas as notas? Vamos mostrar duas formas de fazer isso.
@@ -109,19 +109,19 @@ Por exemplo, se quisermos filtrar os dados de cada período e em seguida calcula
 
 ```{r}
 notas_so_20171 <- filter(notas_so, periodo == "2017.1")
-mean(notas_so_20171$nota1)
+mean(notas_so_20171$nota_1)
 
 notas_so_20172 <- filter(notas_so, periodo == "2017.2")
-mean(notas_so_20172$nota1)
+mean(notas_so_20172$nota_1)
 ```
 
 Da mesma forma, podemos ver a fração de alunos com nota acima da média na unidade 1:
 
 ```{r}
-aprovados_so_20171 <- filter(notas_so, periodo == "2017.1", nota1 >= 7)
+aprovados_so_20171 <- filter(notas_so, periodo == "2017.1", nota_1 >= 7)
 nrow(aprovados_so_20171) / nrow(notas_so_20171)
 
-aprovados_so_20172 <- filter(notas_so, periodo == "2017.2", nota1 >= 7)
+aprovados_so_20172 <- filter(notas_so, periodo == "2017.2", nota_1 >= 7)
 nrow(aprovados_so_20172) / nrow(notas_so_20172)
 ```
 
@@ -136,10 +136,10 @@ Vamos usar como exemplo o cálculo da média para cada unidade, agrupado por per
 ```{r}
 notas_so %>%
   group_by(periodo) %>%
-  summarise(media_unidade1 = mean(nota1),
-            media_unidade2 = mean(nota2),
-            media_unidade3 = mean(nota3),
-            media_unidade4 = mean(nota4))
+  summarise(media_unidade1 = mean(nota_1),
+            media_unidade2 = mean(nota_2),
+            media_unidade3 = mean(nota_3),
+            media_unidade4 = mean(nota_4))
 ```
 
 Quem já mexeu com banco de dados deve estar achando familiar a sintaxe do `group_by`; a ideia é tornar mais intuitiva a análise.
@@ -166,7 +166,7 @@ Voltando... Como fazemos para calcular a fração de aprovados na unidade 1 para
 ```{r}
 notas_so %>%
   group_by(periodo) %>%
-  summarise(frac_aprovados = sum(nota1 >= 7) / n())
+  summarise(frac_aprovados = sum(nota_1 >= 7) / n())
 ```
 
 Ainda temos um incoveniente: ainda precisamos fazer cálculos especificando cada unidade que pretendemos observar. Vamos ver a seguir como organizar os dados de uma forma ainda melhor.
@@ -176,12 +176,85 @@ Ainda temos um incoveniente: ainda precisamos fazer cálculos especificando cada
 Vamos carregar os dados de outras duas disciplinas, Sistemas Distribuídos e Avaliação de Desempenho, aproveitando para adicionar o nome da disciplina e o período no data frame:
 
 ```{r, message=FALSE}
-sd_20171 <- read_csv("../dados/notas_sd_20172.csv") %>%
-  mutate()
-glimpse(sd_20171)
+sd_20172 <- read_csv("../dados/notas_sd_20172.csv") %>%
+  mutate(disciplina = "Sistemas Distribuidos", periodo = "2017.2")
+glimpse(sd_20172)
 
-ads_20171 <- read_csv("../dados/notas_ads_20171.csv")
+ads_20171 <- read_csv("../dados/notas_ads_20171.csv") %>%
+  mutate(disciplina = "Avaliacao de Desempenho de Sistemas", periodo = "2017.1")
 glimpse(ads_20171)
 ```
 
-Podemos juntar as notas de todas as di
+Podemos juntar as notas de todas as disciplinas para facilitar o processamento. Mas temos um problema: as disciplinas de SO têm notas de 4 unidades, enquanto as de ADS e SD só têm 3 unidades. Além disso, ter uma coluna na tabela para cada unidade nos força a ter que especificar para qual unidade queremos calcular estatísticas. E se uma disciplina tiver 10 unidades (mini-testes, por exemplo), temos que ter 10 cálculos para calcular as médias de cada unidade, por exemplo?
+
+Ai que entra o [*tidy data*](http://r4ds.had.co.nz/tidy-data.html), que é uma forma de organizar os dados que facilita muito a análise usando as ferramentas do tidyverse. 
+
+Existem 3 regras para uma tabela ser *tidy*:
+
+- Cada variável deve ter sua própria coluna.
+- Cada observação deve ter sua própria linha.
+- Cada valor deve ter sua própria célula.
+
+A figura abaixo mostra essas regras visualmente:
+
+![](../figs/tidy_data.png)
+
+Como transformar então nossas tabelas de notas no formato *tidy*? Um dos problems atuais é que a variável *nota* está espalhada em várias colunas: *nota_1*, *nota_2*, *nota_3*...
+Temos outra variável implícita que está misturada com a variável nota que é a variável *unidade*, que pode indicar a qual unidade uma prova se refere. Desta forma, a tabela no formato tidy ao invés de ter uma coluna para cada unidade, poderia adicionar uma nova coluna para a variável *unidade* e ter apenas uma coluna para a variável *nota*.
+
+Vamos ver como fazer isso a seguir, usando o comando `gather` do pacote *tidyr*.
+
+```{r}
+gather(so_20171, "unidade", "nota", -id)
+```
+
+Agora temos duas variáveis (unidade e nota) em duas colunas e cada linha contém uma observação, obedecendo o formato *tidy*.
+Vamos aplicar essa mudança para cada tabela de notas e juntá-las em um único data frame, aproveitando para arrumar o formato da variável *unidade*:
+
+```{r}
+so_20171_tidy <- gather(so_20171, "unidade", "nota", 2:5)
+so_20172_tidy <- gather(so_20172, "unidade", "nota", 2:5)
+ads_20171_tidy <- gather(ads_20171, "unidade", "nota", 2:4)
+sd_20172_tidy <- gather(sd_20172, "unidade", "nota", 2:4)
+
+notas <- bind_rows(so_20171_tidy, so_20172_tidy, ads_20171_tidy, sd_20172_tidy) %>%
+  mutate(unidade = as.integer(str_remove_all(unidade, "nota_")))
+
+notas
+```
+
+Como calcular agora a nota média para cada disciplina, período e unidade? Ficou bem mais fácil.
+
+## Média de notas por unidade
+
+```{r}
+notas %>%
+  group_by(disciplina, periodo, unidade) %>%
+  summarise(media = mean(nota))
+```
+
+
+## Média dos alunos por disciplina
+
+```{r}
+notas %>%
+  group_by(disciplina, periodo, id) %>%
+  summarise(media = mean(nota))
+```
+
+## Média geral da disciplina
+
+```{r}
+notas %>%
+  group_by(disciplina, periodo) %>%
+  summarise(media = mean(nota))
+```
+
+## Top notas
+
+```{r}
+notas %>%
+  group_by(disciplina, periodo, id) %>%
+  summarise(media = mean(nota)) %>%
+  arrange(desc(media))
+```
