@@ -310,7 +310,7 @@ glimpse(so_20171)</code></pre>
 </div>
 <div id="juntando-data-frames" class="section level2">
 <h2>Juntando data frames</h2>
-<p>Agora podemos junta os dois usando o comando <code>bind_rows</code> do pacote <code>dpyr</code>, que junta as linhas de data frames que possuem as mesmas colunas:</p>
+<p>Agora podemos junta os dois usando o comando <code>bind_rows</code> do pacote <code>dplyr</code>, que junta as linhas de data frames que possuem as mesmas colunas:</p>
 <pre class="r"><code>notas_so &lt;- bind_rows(so_20171, so_20172)
 
 notas_so</code></pre>
@@ -372,20 +372,22 @@ nrow(aprovados_so_20172) / nrow(notas_so_20172)</code></pre>
   prop.table() %&gt;%
   sort(decreasing = TRUE)</code></pre>
 <pre><code>## .
-##    6    5    2    3    8    1    7   10    4    9 
-## 0.15 0.12 0.11 0.11 0.11 0.10 0.10 0.10 0.06 0.04</code></pre>
+##    3    7    8    2    4    1    5    6    9   10 
+## 0.16 0.13 0.13 0.12 0.11 0.09 0.09 0.07 0.06 0.04</code></pre>
 <p>É igual a:</p>
 <pre class="r"><code>sort(prop.table(table(sample.int(10, 100, replace = TRUE))), decreasing = TRUE)</code></pre>
 <pre><code>## 
-##    3    4    1    8   10    9    6    7    5    2 
-## 0.13 0.13 0.12 0.12 0.11 0.10 0.09 0.09 0.07 0.04</code></pre>
+##    1    5    8    9    4    6    7   10    3    2 
+## 0.15 0.14 0.14 0.12 0.10 0.09 0.08 0.08 0.06 0.04</code></pre>
 <p>Voltando… Como fazemos para calcular a fração de aprovados na unidade 1 para cada período?</p>
 <pre class="r"><code>notas_so %&gt;%
   group_by(periodo) %&gt;%
-  summarise(frac_aprovados = sum(nota_1 &gt;= 7) / n())</code></pre>
+  summarise(total_alunos = n(),
+            total_aprovados = sum(nota_1 &gt;= 7),
+            frac_aprovados =  total_aprovados / total_alunos)</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":["periodo"],"name":[1],"type":["chr"],"align":["left"]},{"label":["frac_aprovados"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"2017.1","2":"0.7619048"},{"1":"2017.2","2":"0.7307692"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":["periodo"],"name":[1],"type":["chr"],"align":["left"]},{"label":["total_alunos"],"name":[2],"type":["int"],"align":["right"]},{"label":["total_aprovados"],"name":[3],"type":["int"],"align":["right"]},{"label":["frac_aprovados"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"2017.1","2":"21","3":"16","4":"0.7619048"},{"1":"2017.2","2":"26","3":"19","4":"0.7307692"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 <p>Ainda temos um incoveniente: ainda precisamos fazer cálculos especificando cada unidade que pretendemos observar. Vamos ver a seguir como organizar os dados de uma forma ainda melhor.</p>
@@ -444,7 +446,7 @@ ads_20171_tidy &lt;- gather(ads_20171, &quot;unidade&quot;, &quot;nota&quot;, 2:
 sd_20172_tidy &lt;- gather(sd_20172, &quot;unidade&quot;, &quot;nota&quot;, 2:4)
 
 notas &lt;- bind_rows(so_20171_tidy, so_20172_tidy, ads_20171_tidy, sd_20172_tidy) %&gt;%
-  mutate(unidade = as.integer(str_remove_all(unidade, &quot;nota_&quot;)))
+  mutate(unidade = str_remove_all(unidade, &quot;nota_&quot;) %&gt;% as.integer())
 
 notas</code></pre>
 <div data-pagedtable="false">
@@ -498,6 +500,27 @@ notas</code></pre>
   </script>
 </div>
 </div>
+</div>
+<div id="materiais" class="section level1">
+<h1>Materiais</h1>
+<ul>
+<li>Livro: <a href="https://cdr.ibpad.com.br/">Ciência de dados com R</a>
+<ul>
+<li><a href="https://cdr.ibpad.com.br/lendo-os-dados.html">Cap 3. Lendo os dados</a></li>
+<li><a href="https://cdr.ibpad.com.br/manipulando-os-dados.html">Cap 4. Manipulando os dados</a></li>
+<li><a href="https://cdr.ibpad.com.br/limpando-dados.html">Cap 5. Limpando os dados</a></li>
+</ul></li>
+<li>Livro: <a href="http://r4ds.had.co.nz/pipes.html">R for Data Science</a>
+<ul>
+<li><a href="http://r4ds.had.co.nz/transform.html">Cap 5. Data transformation</a></li>
+<li><a href="http://r4ds.had.co.nz/data-import.html">Cap 11. Data import</a></li>
+<li><a href="http://r4ds.had.co.nz/tidy-data.html">Cap 12. Tidy data</a></li>
+</ul></li>
+<li>Curso: <a href="http://curso-r.github.io">Curso R</a>
+<ul>
+<li><a href="http://curso-r.github.io/posts/aula04.html">Aula 04. Manipulação de dados</a></li>
+</ul></li>
+</ul>
 </div>
 
 

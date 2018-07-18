@@ -232,29 +232,9 @@ Como calcular agora a nota média para cada disciplina, período e unidade? Fico
 
 ```{r}
 notas %>%
-  filter(disciplina == "Sistemas Operacionais", periodo == "2017.1") %>%
-  summarise(media = mean(nota))
-
-notas %>%
-  filter(disciplina == "Sistemas Operacionais", periodo == "2017.2") %>%
-  summarise(media = mean(nota))
-
-notas %>%
-  filter(disciplina == "Sistemas Distribuidos", periodo == "2017.2") %>%
-  summarise(media = mean(nota))
-
-notas %>%
-  filter(disciplina == "Avaliacao de Desempenho de Sistemas", periodo == "2017.1") %>%
-  summarise(media = mean(nota))
-```
-
-
-```{r}
-notas %>%
   group_by(disciplina, periodo, unidade) %>%
   summarise(media = mean(nota))
 ```
-
 
 ## Média dos alunos por disciplina
 
@@ -280,3 +260,18 @@ notas %>%
   summarise(media = mean(nota)) %>%
   arrange(desc(media))
 ```
+
+# Materiais
+
+- Livro: [Ciência de dados com R](https://cdr.ibpad.com.br/)
+    - [Cap 3. Lendo os dados](https://cdr.ibpad.com.br/lendo-os-dados.html)
+    - [Cap 4. Manipulando os dados](https://cdr.ibpad.com.br/manipulando-os-dados.html)
+    - [Cap 5. Limpando os dados](https://cdr.ibpad.com.br/limpando-dados.html)
+
+- Livro: [R for Data Science](http://r4ds.had.co.nz/pipes.html)
+    - [Cap 5. Data transformation](http://r4ds.had.co.nz/transform.html)
+    - [Cap 11. Data import](http://r4ds.had.co.nz/data-import.html)
+    - [Cap 12. Tidy data](http://r4ds.had.co.nz/tidy-data.html)
+
+- Curso: [Curso R](http://curso-r.github.io)
+    - [Aula 04. Manipulação de dados](http://curso-r.github.io/posts/aula04.html)
