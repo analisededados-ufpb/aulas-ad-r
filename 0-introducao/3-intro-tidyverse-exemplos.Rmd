@@ -27,6 +27,7 @@ Nesta disciplina nós vamos realizar nossas análises usando prioritariamente es
 Para carregar os pacotes tidyverse, rode:
 
 ```{r setup, message=FALSE}
+# install.packages("tidyverse")
 library(tidyverse)
 ```
 
@@ -82,7 +83,7 @@ glimpse(so_20172)
 
 ## Juntando data frames
 
-Agora podemos junta os dois usando o comando `bind_rows` do pacote `dpyr`, que junta as linhas de data frames que possuem as mesmas colunas:
+Agora podemos junta os dois usando o comando `bind_rows` do pacote `dplyr`, que junta as linhas de data frames que possuem as mesmas colunas:
 
 ```{r}
 notas_so <- bind_rows(so_20171, so_20172)
@@ -166,7 +167,9 @@ Voltando... Como fazemos para calcular a fração de aprovados na unidade 1 para
 ```{r}
 notas_so %>%
   group_by(periodo) %>%
-  summarise(frac_aprovados = sum(nota_1 >= 7) / n())
+  summarise(total_alunos = n(),
+            total_aprovados = sum(nota_1 >= 7),
+            frac_aprovados =  total_aprovados / total_alunos)
 ```
 
 Ainda temos um incoveniente: ainda precisamos fazer cálculos especificando cada unidade que pretendemos observar. Vamos ver a seguir como organizar os dados de uma forma ainda melhor.
@@ -218,7 +221,7 @@ ads_20171_tidy <- gather(ads_20171, "unidade", "nota", 2:4)
 sd_20172_tidy <- gather(sd_20172, "unidade", "nota", 2:4)
 
 notas <- bind_rows(so_20171_tidy, so_20172_tidy, ads_20171_tidy, sd_20172_tidy) %>%
-  mutate(unidade = as.integer(str_remove_all(unidade, "nota_")))
+  mutate(unidade = str_remove_all(unidade, "nota_") %>% as.integer())
 
 notas
 ```
@@ -226,6 +229,25 @@ notas
 Como calcular agora a nota média para cada disciplina, período e unidade? Ficou bem mais fácil.
 
 ## Média de notas por unidade
+
+```{r}
+notas %>%
+  filter(disciplina == "Sistemas Operacionais", periodo == "2017.1") %>%
+  summarise(media = mean(nota))
+
+notas %>%
+  filter(disciplina == "Sistemas Operacionais", periodo == "2017.2") %>%
+  summarise(media = mean(nota))
+
+notas %>%
+  filter(disciplina == "Sistemas Distribuidos", periodo == "2017.2") %>%
+  summarise(media = mean(nota))
+
+notas %>%
+  filter(disciplina == "Avaliacao de Desempenho de Sistemas", periodo == "2017.1") %>%
+  summarise(media = mean(nota))
+```
+
 
 ```{r}
 notas %>%
