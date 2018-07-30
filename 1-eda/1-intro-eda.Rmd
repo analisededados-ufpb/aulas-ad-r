@@ -1,0 +1,454 @@
+---
+title: "Análise Exploratória de Dados"
+author: "Prof. Marcus Carvalho"
+date: "Análise de Dados I - 2018.1"
+output:
+  ioslides_presentation:
+      widescreen: true
+---
+
+```{r setup, include=FALSE}
+#knitr::opts_chunk$set(echo = FALSE)
+
+library(dplyr)
+library(emo)
+library(ggplot2)
+```
+
+# Exploratory Data Analysis (EDA)
+
+## O que é EDA?
+
+- Sumarização e visualização de dados para analisar suas características principais
+
+> - Ciclo iterativo:
+>     - Faça perguntas sobre os dados.
+>     - Procure respostas visualizando, transformando e modelando os dados.
+>     - Use o que aprendeu para refinar perguntas e/ou fazer novas perguntas.
+
+> - Inicialmente, investigue qualquer ideia que surgir
+>     - Algumas darão certo, outras não.
+
+# *“Far better an approximate answer to the right question, which is often vague, than an exact answer to the wrong question, which can always be made precise.”* — John Tukey
+
+## Fazendo perguntas
+
+- Seu objetivo na EDA é desenvolver um entendimento dos dados
+    - A forma mais fácil é fazendo perguntas para guiar sua investigação
+    - Foca sua atenção em partes específicas dos dados
+    - Ajuda a decidir que gráficos, modelos ou transformações fazer
+    
+> - É um processo criativo
+>     - A chave para fazer perguntas de **qualidade** é produzir uma grande **quantidade** de perguntas
+>     - Como fazer perguntas reveladoras sem conhecer os dados?
+
+> - Cada pergunta expõe um novo aspecto dos dados
+>     - Aumenta a chance de novas descobertas
+>     - Leva a insights interessantes deixando as perguntas levarem a outras
+
+## Tipos de perguntas
+
+Não há regras, mas dois tipos são muito úteis para novas descobertas:
+
+- Que tipo de **variação** ocorre nas minhas variáveis?
+- Que tipo de **covariação** ocorre entre as minhas variáveis?
+    
+Algumas definições:
+
+- **Variável**: quantidade, qualidade ou propriedade que você pode medir.
+- **Valor**: estado de uma variável quando você a mede (pode mudar).
+- **Observação**: conjunto de medições feitas em condições similares.
+
+# Variância
+
+## O que é *variância* e por que analisá-la?
+
+- Tendência de uma variável mudar seu valor de uma medição para outra
+
+- Cada variável tem seu próprio padrão de variação
+    - Pode revelar informações interessantes
+
+- A melhor forma de entender padrões é visualizando a distribuição dos dados
+
+- Como visualizar distribuições?
+    - Depende se dados são *categóricos* ou *contínuos*
+    
+## Visualizando dados categóricos
+
+- Uma variável categórica só pode assumir um pequeno conjunto de valores
+
+Podemos examinar a distribuição de dados categóricos:
+
+<div class="columns-2">
+
+- Usando um gráfico de barras:
+
+```{r, fig.width=4.7, fig.height=2.7}
+ggplot(diamonds, aes(x = cut)) +
+  geom_bar()
+```
+
+- Ou computando manualmente:
+
+```{r}
+diamonds %>%
+  count(cut)
+```
+</div>
+
+## Visualizando dados contínuos
+
+Uma variável contínua pode assumir qualquer valor entre um conjunto infinito de valores ordenados (Exemplo: números e datas)
+
+<div class="columns-2">
+
+- Podemos visualizar com *histograma*:
+
+```{r, fig.width=4.7, fig.height=3}
+ggplot(diamonds, aes(x = carat)) +
+  geom_histogram(binwidth = 1)
+```
+
+- Ou computando manualmente:
+
+```{r}
+diamonds %>% 
+  count(cut_width(carat, 1))
+```
+
+</div>
+
+
+## Visualizando dados contínuos - Histogramas
+
+- O *binwidth* define a largura dos intervalos de um histograma
+    - Exemplo para diamantes com menos de 3 quilates e intervalos menores:
+
+```{r, fig.width=7, fig.height=3.4}
+smaller <- diamonds %>% 
+  filter(carat < 3)
+ggplot(smaller, aes(x = carat)) + geom_histogram(binwidth = 0.1)
+```
+
+## Visualizando dados contínuos - Histogramas
+
+- Para vários histogramas no mesmo gráfico, recomenda-se `geom_freqpoly`
+    - Plota contagens com um linha pra cada categoria, ao invés de barras
+
+```{r, fig.width=8, fig.height=3.4}
+ggplot(smaller, aes(x = carat, colour = cut)) +
+  geom_freqpoly(binwidth = 0.1)
+```
+
+
+# Já visualizamos variação... e agora? Que outras perguntas faremos?
+
+## Valores típicos
+
+- Gráfico de barras e histogramas mostram valores mais e menos frequentes
+
+- Para tornar essa informação em algo útil, procure algo inesperado:
+    - Quais valores são mais comuns? Por que?
+    - Quais valores são raros? Isso corresponde às expectativas?
+    - Você consegue ver padrões incomuns? O que pode explicá-los?
+    
+    
+## Valores típicos - perguntas interessantes
+
+- Por que tem mais diamantes com quilates inteiros e algumas frações comuns?
+- Por que tem mais diamantes à direita de cada pico do que à esquerda?
+- Por que não há diamantes com mais que 3 quilates?
+
+```{r, fig.width=8, fig.height=3.4}
+ggplot(smaller, aes(x = carat)) + geom_histogram(binwidth = 0.01)
+```
+
+## Agrupamento de valores similares - Perguntas
+
+- Quão parecidas são as observações dentro de cada grupo?
+- Quão diferentes são as observações de grupos diferentes?
+- Como você pode explicar ou descrever os grupos?
+
+<hr>
+
+<div class="columns-2">
+**Exemplo**: duração de erupções do *Old Faithful Geyser*, em minutos
+
+Aparenta divisão em dois grupos:
+
+- Erupções curtas ($\approx 2$ minutos)
+- Erupções longas ($4 - 5$ minutos)
+
+```{r, fig.width=5.1, fig.height=3.5}
+ggplot(faithful, aes(x = eruptions)) +
+  geom_histogram(binwidth = 0.25)
+```
+</div>
+
+## Valores incomuns - *outliers*
+
+Dados que não aparentam seguir o padrão.
+
+- Pode ser erro nos dados, mas pode ser algo importante porém inesperado
+
+<div class="columns-2">
+Ex: altura de diamantes. Outliers?
+
+```{r, fig.width=4.5, fig.height=3}
+ggplot(diamonds, aes(x = y)) +
+  geom_histogram(binwidth = 0.5)
+```
+
+```{r, fig.width=4.5, fig.height=3}
+# Com zoom
+ggplot(diamonds, aes(x = y)) + 
+  geom_histogram(binwidth = 0.5) +
+  coord_cartesian(ylim = c(0, 50))
+```
+
+</div>
+
+
+## Investigando valores incomuns: 0, ~30 e ~60
+
+<div class="columns-2">
+
+```{r}
+diamonds %>% 
+  filter(y < 3 | y > 20) %>% 
+  select(price, x, y, z) %>%
+  arrange(y)
+```
+
+</div>
+
+<hr>
+
+**Faz sentido (?)**
+
+- Diamantes com dimensões (x, y e z) iguais a zero?
+- Diamantes com dimensões muito grandes, mas que não custam tão caro?
+
+
+## O que fazer com valores estranhos?
+
+- **Opção 1**: Eliminar as linhas (observações) que têm valores estranhos
+     - Mas, se 1 medição é estranha as outras na mesma linha podem não ser
+
+```{r}
+diamonds_filtered <- diamonds %>% 
+  filter(between(y, 3, 20))
+```
+
+- **Opção 2**: Substituir valores estranhos por valores inexistentes
+    - Representado por `NA` no R (*Not Available*). Não afeta estatísticas.
+    
+```{r}
+diamonds_na <- diamonds %>% 
+  mutate(y = ifelse(y < 3 | y > 20, NA, y))
+```
+  
+## Ex: antes e depois de substituir *outliers* por `NA`
+
+<div class="columns-2">
+
+<br>
+
+```{r, fig.width=4.5, fig.height=3}
+ggplot(diamonds, aes(x, y)) + 
+  geom_point()
+```
+
+```{r, fig.width=4.5, fig.height=3}
+ggplot(diamonds_na, aes(x, y)) + 
+  geom_point()
+```
+</div>
+
+# Covariância
+
+## O que é covariância e por que analisá-la?
+
+- *Covariância* descreve o comportamento **entre variáveis**.
+    - Tendência de 2 ou mais variáveis variarem juntas, de forma relacionada.
+
+- É importante para encontrar padrões de relacionamento entre variáveis
+    - E criar modelos que estimam valores com base nessas relações
+    - Ex: estimar votos de candidatos com base nos gastos de campanha
+    
+- A melhor forma de identificar covariância é visualizar o relacionamento entre variáveis
+    - Novamente, isto depende dos tipos das variáveis
+   
+     
+## Covariância: 1 variável categórica e 1 contínua
+
+- Problema: categorias com frequências muito diferentes
+    - Solução 1: plotar valor normalizado por categoria (densidade)
+
+<div class="columns-2">
+```{r, fig.width=4.7, fig.height=2.8}
+diamonds %>%
+ ggplot(aes(price, col = cut)) +
+ geom_freqpoly(binwidth = 500)
+```
+
+```{r, fig.width=4.7, fig.height=2.8}
+diamonds %>%
+ ggplot(aes(price, stat(density), col = cut)) +
+ geom_freqpoly(binwidth = 500)
+```
+</div>
+
+## Alternativa para comparar variâncias: *Boxplot*
+
+- Mostra visualmente algumas estatísticas populares de uma distribuição
+
+<div align="center">
+<img src="../figs/EDA-boxplot.png" width=94%>
+</div>
+
+## Covariância: 1 variável categórica e 1 contínua
+
+- Solução 2: boxplot para comparar variâncias por categoria
+    - Mais compacto, mais fácil de comparar várias categorias
+
+<div class="columns-2">
+
+```{r, fig.width=5, fig.height=3.5}
+ggplot(diamonds, aes(cut, price)) +
+  geom_boxplot()
+```
+
+- Diamantes de maior qualidade são mais baratos? Por que?!
+
+</div>
+
+## Variáveis categóricas
+
+- A qualidade dos diamantes é uma variável categórica **ordinal**
+    - Há uma ordem da menor qualidade (*Fair*) para a maior qualidade (*Ideal*)
+
+- Variáveis categóricas podem ser **não ordinais** se não há ordem nos valores
+    - Neste caso, podemos ordená-las de acordo com outras variáveis
+    
+```{r, fig.width=6, fig.height=2.8}
+ggplot(mpg, aes(x = reorder(class, hwy, FUN = median), y = hwy)) +
+  geom_boxplot() + xlab("class")
+```
+    
+## Covariância: duas variáveis categóricas
+
+- Contar a quantidade de observações para cada combinação
+
+<div class="columns-2">
+
+```{r, fig.width=5, fig.height=3.3}
+diamonds %>%
+  ggplot(aes(cut, color)) +
+  geom_count()
+```
+
+```{r, fig.width=5, fig.height=3.3}
+count(diamonds, color, cut) %>%  
+  ggplot(mapping = aes(color, cut)) +
+    geom_tile(aes(fill = n))
+```
+
+</div>
+
+
+## Covariância: duas variáveis contínuas
+
+<div class="columns-2">
+
+- Já vimos uma opção: scatter plots
+
+```{r, fig.width=4.7, fig.height=3}
+ggplot(diamonds, aes(carat, price)) +
+  geom_point()
+```
+
+<br>
+
+- Com transparência (`alpha`)
+
+```{r, fig.width=4.7, fig.height=3}
+ggplot(diamonds, aes(carat, price)) + 
+  geom_point(alpha = 1 / 100)
+```
+
+</div>
+
+## Covariância: duas variáveis contínuas
+
+- Opção 2: *bin* (como `geom_histogram`, mas para 2 dimensões)
+
+<div class="columns-2">
+
+```{r, fig.width=4.5, fig.height=3}
+ggplot(smaller) +
+  geom_bin2d(aes(carat, price))
+```
+
+```{r, fig.width=4.5, fig.height=3}
+ggplot(smaller) +
+  geom_hex(aes(carat, price))
+```
+</div>
+
+## Covariância: duas variáveis contínuas
+
+- Opção 3: tratar uma das variáveis como categóricas
+
+```{r, fig.width=6, fig.height=4}
+ggplot(smaller, aes(carat, price)) + 
+  geom_boxplot(aes(group = cut_width(carat, 0.1)))
+```
+
+
+## Covariância: 2 variáveis contínuas e 1 categórica
+
+- Para comparar relações para diferentes categorias: subplots (ou *facets*)
+    
+```{r, fig.width=8, fig.height=4.5}
+ggplot(diamonds, aes(carat, price)) + geom_point() + facet_wrap(vars(cut))
+```
+
+
+## Covariância: 2 variáveis contínuas e 2 categóricas
+
+```{r, fig.width=8, fig.height=5}
+ggplot(diamonds, aes(carat, price)) + geom_point() + facet_grid(clarity ~ cut)
+```
+
+## Padrões nos dados
+
+Se encontrar padrões, pergunte-se:
+
+- Este padrão acontece por coincidência?
+- Como você descreve o relaciomento implicado pelo padrão?
+- Quão forte é o relacionado implicado pelo padrão?
+- Que outras variáveis afetam este relacionamento?
+- O relacionamento muda se você olhar subgrupos individuais dos dados?
+
+
+## Padrões nos dados
+
+- Exemplo: tempos de espera mais longos geram erupções mais longas
+
+```{r, fig.width=4.5, fig.height=2.7, fig.align='center'}
+ggplot(faithful, aes(eruptions, waiting)) + geom_point()
+```
+
+- **Variância**: gera incerteza; **Covariância**: reduz incerteza.
+    - Valores de uma variável podem ajudar a prever valores de outra
+    
+## Referências
+
+- R for Data Science. [7 - Exploratory Data Analysis](http://r4ds.had.co.nz/exploratory-data-analysis.html)
+
+- Ciência de dados com R. [9 - Visualizações de dados (ggplot2)](https://cdr.ibpad.com.br/ggplot2.html)
+
+- [Exploratory Data Analysis with R](https://bookdown.org/rdpeng/exdata/).
+
+- Curso R. [Aula 05 - Gráficos com estilo - ggplot2](http://curso-r.github.io/posts/aula05.html)
