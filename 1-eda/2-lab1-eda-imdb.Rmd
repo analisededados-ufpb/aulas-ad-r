@@ -1,0 +1,14 @@
+---
+title: "Lab 1: EDA de avaliações de seriados do IMDB"
+author: "Marcus Carvalho"
+date: "29/07/2018"
+output: html_document
+---
+
+## Descrição da atividade
+
+Você deve usar os dados de séries do IMDB para fazer uma análise exploratória de dados em um seriado de sua escolha. A descrição da atividade, os dados e o template inicial do relatório estão neste repositório: https://github.com/analise-de-dados-ufpb/eda-imdb.
+
+A atividade será realizada através do [GitHub Classroom](https://classroom.github.com/), que criará automaticamente um repositório individual para você trabalhar. O link da atividade foi divulgado no [Google Classroom](https://classroom.google.com/) da turma.
+
+Faça um clone do repositório e leia as instruções no README.md. O relatório que você gerar deve ser enviado (commit + push) para o repositório que será criado para você através do Github Classroom. Envie tanto o código `eda-minha-serie.Rmd` quanto o `eda-minha-serie.nb.html` que você gerar com a sua análise.
