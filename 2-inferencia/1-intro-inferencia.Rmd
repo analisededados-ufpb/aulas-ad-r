@@ -1,0 +1,169 @@
+---
+title: "Inferência Estatística - Exemplo eleição"
+author: "Marcus Carvalho (adaptado de Nazareno Andrade e Raquel Lopes)"
+date: "Análise de Dados I - 2018.1"
+output: html_notebook
+---
+
+Neste exemplo, nós vamos mostrar como inferir o resultado de uma eleição
+(população) com base em pesquisas eleitorais (amostras). A ideia é analisar 
+as diferentes conclusões que podem ser chegadas através da amostragem e mostrar
+que o objetivo da inferência é indicar a margem de erro das estimativas.
+
+Este exemplo serve como motivação para o uso de métodos de inferência
+estatística.
+
+```{r setup, message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+library(purrr)
+library(scales)
+
+# Formula para calcular margem de erro para proporcao
+margem_erro_proporcao <- function(p, n, confianca = 0.95) {
+  z <- qnorm((confianca + 1) / 2)
+  margem_erro <- z * sqrt((p * (1 - p))/ n)
+  return(margem_erro)
+}
+```
+
+
+# Simulando votos em uma eleição presidencial
+
+Inicialmente, iremos simular uma eleição com 100 milhões de eleitores, onde os
+candidatos a presidente receberam as seguintes porcentagens de votos: Lula 37%,
+Bolsonaro 19%, Marina 16%, Ciro 15% e Alckmin 13%.
+
+```{r}
+n_eleitores <- 100000000
+
+eleicao_stats <- data_frame(
+  candidato = c("Lula", "Bolsonaro", "Marina", "Ciro", "Alckmin"),
+  votos_porcentagem = c(0.37, 0.19, 0.16, 0.15, 0.13)
+)
+```
+
+Também serão simuladas 100 pesquisas eleitorais, onde em cada pesquisa foram
+consultados 2000 eleitores. Cada pesquisa será uma amostra, que será gerada
+com o comando `sample` usando as porcentagens de voto da eleição "real"
+(população) mostrada acima para gerar opiniões de votos aleatórios nas
+pesquisas.
+
+```{r}
+n_pesquisados <- 2000
+
+pesquisas <- 1:100 %>%
+  map_df(
+    ~ data_frame(
+      id_pesquisa = .x, id_pesquisado = 1:n_pesquisados,
+      candidato_votado = factor(sample(eleicao_stats$candidato, n_pesquisados,
+                                       eleicao_stats$votos_porcentagem,
+                                       replace = TRUE),
+                                levels = eleicao_stats$candidato)
+    )
+  )
+```
+
+Abaixo podemos visualizar como exemplo o resultado da primeira pesquisa. Note
+que a porcentagem de votos não é exatamente igual ao da população total de
+100 milhões de eleitores, por se tratar apenas de uma amostra de 2000
+pesquisados.
+
+```{r}
+pesquisas %>%
+  filter(id_pesquisa == 1) %>%
+  group_by(candidato_votado) %>%
+  summarise(n_votos_pesquisa = n(),
+            porcentagem_votos_pesquisa = percent(n_votos_pesquisa / n_pesquisados)) %>%
+  arrange(desc(n_votos_pesquisa))
+```
+
+Outras pesquisas podem gerar porcentagens diferentes, podendo em alguns casos
+alterar a ordem dos candidatos mais votados.
+
+```{r}
+pesquisas_stats <- pesquisas %>%
+  group_by(id_pesquisa, candidato_votado) %>%
+  summarise(n_votos_pesquisa = n()) %>%
+  mutate(porcentagem_votos_pesquisa = n_votos_pesquisa / sum(n_votos_pesquisa))
+
+pesquisas_stats
+```
+
+Vamos olhar graficamente como foram os resultados das 100 pesquisas eleitorais
+realizadas. Cada círculo representa a porcentagem de votos de um candidato
+em uma pesquisa eleitoral. A barra de erro mostra o 2,5-percentil e o
+97,5-percentil da porcentagem de votos para cada candidato, ou seja, em 95% das
+pesquisas a porcentagem de votos de um candidato ficou dentro dos limites da
+barra de erro. A largura desta barra dá um indicativo da margem de erro do
+resultado das amostras.
+
+```{r}
+pesquisas_summary <- pesquisas_stats %>%
+  group_by(candidato_votado) %>%
+  summarise(
+    quantil_0025 = quantile(porcentagem_votos_pesquisa, .025),
+    media_porcentagem_votos = mean(porcentagem_votos_pesquisa),
+    quantil_0975 = quantile(porcentagem_votos_pesquisa, .975),
+    margem_erro_quantil = percent((quantil_0975 - quantil_0025) / 2),
+    margem_erro_proporcao = percent(
+      margem_erro_proporcao(media_porcentagem_votos, n_pesquisados))
+  )
+
+ggplot(pesquisas_stats) +
+  geom_jitter(aes(candidato_votado, porcentagem_votos_pesquisa, col = candidato_votado),
+              width = 0.3, height = 0, alpha = 0.3, size = 3) +
+  geom_errorbar(aes(x = candidato_votado, ymin = quantil_0025, ymax = quantil_0975),
+                data = pesquisas_summary)
+```
+
+
+Qual é o impacto do tamanho da amostra na margem de erro? A proporção de
+votos de um candidato também impacta na sua margem de erro?
+
+A margem de erro para uma proporção é calculado da seguinte forma:
+
+$$\varepsilon = z . \sqrt{\frac{p (1 - p)}{n}}$$
+
+onde $p$ é o valor da proporção, $n$ é o tamanho da amostra e $z$ é o valor da
+distribuição normal correspondente ao nível de confianç desejado
+(ex: $z = 1,96$ para um nível de confiança de 95%).
+
+Com base na margem de erro da proporção, podemos visualizar o impacto do
+tamanho da amostra $n$ e da proporção $p$ na margem de erro $\varepsilon$:
+
+```{r}
+p <- seq(0, 1, .1)
+n <- c(200, 500, 1000, 2000, 5000, 10000)
+erro_n <- map_df(n,
+                 ~ data_frame(n_pesquisados = .x, proporcao = p,
+                              margem_erro = margem_erro_proporcao(p, .x)))
+
+ggplot(erro_n, aes(proporcao, margem_erro,
+                   col = factor(n_pesquisados, ordered = TRUE))) +
+  geom_vline(aes(xintercept = 0.5), lty = 2) +
+  geom_point(size = 3)
+```
+
+Podemos observar que a margem de erro máxima ocorre quanto o valor da proporção
+é igual a 0,5. Na prática, as pesquisas eleitorais trabalham com a margem de
+erro máxima, considerando o valor 0,5 ao indicar a margem de erro.
+
+Fixando a proporção em 0,5 podemos então analisar a margem de erro máxima para
+diferentes tamanhos de amostra:
+
+```{r}
+erro_n %>%
+  filter(proporcao == 0.5) %>%
+  ggplot(aes(as.numeric(n_pesquisados), margem_erro)) +
+  geom_point() +
+  geom_line() +
+  scale_x_continuous(breaks = n) +
+  scale_y_continuous(breaks = seq(0, 1, 0.01), labels = percent) +
+  theme(panel.grid.minor.x = element_blank())
+```
+
+Note que o decaimento é logarítmico, ou seja, no início com pequenos aumentos
+no tamanho da amostra já podemos ter uma diminuição significativa na margem
+de erro. Mas chega a um ponto em que um grande aumento no tamanho da amostra
+apresenta uma diminuição insignificante na margem de erro.
