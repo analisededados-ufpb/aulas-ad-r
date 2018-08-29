@@ -1,0 +1,104 @@
+---
+title: "Inferência filmes IMDB"
+output: html_notebook
+---
+
+```{r setup}
+library(boot)
+library(dplyr)
+library(here)
+library(readr)
+library(stringr)
+```
+
+```{r}
+  title_basics <- read_tsv(here("..", "eda-imdb", "data", "title.basics.tsv"),
+                           na = "\\N", quote = "", col_types = "cccciicic")
+  #title_episode <- read_tsv(here("..", "eda-imdb", "data", "title.episode.tsv"), na = "\\N", quote = "")
+  title_ratings <- read_tsv(here("..", "eda-imdb", "data", "title.ratings.tsv"),
+                            na = "\\N", quote = "", col_types = "cdi")
+  
+  filmes_top <- title_basics %>%
+    filter(titleType %in% c("movie")) %>%
+    left_join(title_ratings) %>%
+    top_n(1000, numVotes)
+
+  filmes_top <- filmes_top %>%
+    #left_join(title_episode) %>%
+    left_join(title_basics) %>%
+    left_join(title_ratings) %>%
+    select(
+      nome_filme = primaryTitle,
+      ano = startYear,
+      duracao_minutos = runtimeMinutes,
+      generos = genres,
+      avaliacao_media = averageRating,
+      num_votos = numVotes
+    )
+```
+
+Dados:
+
+```{r}
+filmes_top
+```
+
+
+```{r}
+comedia <- filmes_top %>%
+  rowwise() %>%
+  filter("Comedy" %in% str_split(generos, ",", simplify = TRUE))
+comedia
+
+acao <- filmes_top %>%
+  rowwise() %>%
+  filter("Action" %in% str_split(generos, ",", simplify = TRUE))
+acao
+
+paste("Comédia - Avaliação média:", mean(comedia$avaliacao_media))
+paste("Ação - Avaliação média:", mean(acao$avaliacao_media))
+```
+
+```{r}
+statistic_fn <- function(dados, indices, coluna, fn = mean) {
+  dados %>%
+    slice(indices) %>%
+    pull(coluna) %>%
+    fn()  
+}
+
+repeticoes = 4000
+
+comedia_boot <- comedia %>%
+  boot(statistic = statistic_fn, R = repeticoes, coluna = "avaliacao_media")
+comedia_boot
+
+acao_boot <- acao %>%
+  boot(statistic = statistic_fn, R = repeticoes, coluna = "avaliacao_media")
+acao_boot
+
+```
+
+Distribuição amostral via bootstrap:
+
+```{r}
+dados_boot <- data_frame(genero = "comedia",
+                         estatistica = as.double(comedia_boot$t)) %>%
+  bind_rows(data_frame(genero = "acao",
+                   estatistica = as.double(acao_boot$t)))
+
+ggplot(dados_boot, aes(x = estatistica)) +
+  geom_histogram() +
+  facet_wrap(~ genero, ncol = 1)
+```
+
+Intervalos de confiança para a média com bootstrap:
+
+```{r}
+comedia_boot_ci <- boot.ci(comedia_boot, conf = 0.95, type = "basic")
+comedia_boot_ci
+
+acao_boot_ci <- boot.ci(acao_boot, conf = 0.95, type = "basic")
+acao_boot_ci
+```
+
