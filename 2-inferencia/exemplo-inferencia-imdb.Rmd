@@ -6,8 +6,10 @@ output: html_notebook
 ```{r setup}
 library(boot)
 library(dplyr)
+library(ggplot2)
 library(here)
 library(readr)
+library(resample)
 library(stringr)
 ```
 
@@ -101,4 +103,26 @@ comedia_boot_ci
 acao_boot_ci <- boot.ci(acao_boot, conf = 0.95, type = "basic")
 acao_boot_ci
 ```
+
+# Bootstrap com o pacote resample
+
+```{r}
+bootstrap_fun = function(dados, repeticoes = 2000) {
+  b = bootstrap(dados, mean, R = repeticoes)
+  ci.from.percentile = CI.percentile(b, probs = c(.025, .975))
+  return(data_frame(lower = ci.from.percentile[1], 
+                    upper = ci.from.percentile[2]))
+}
+
+dados_boot_ci <- dados_boot %>%
+  group_by(genero) %>%
+  do(bootstrap_fun(.$estatistica))
+
+dados_boot_ci
+
+ggplot(dados_boot_ci, aes(genero, ymin = lower, ymax = upper)) +
+         geom_errorbar()
+  
+```
+
 
