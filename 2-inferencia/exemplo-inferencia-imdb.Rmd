@@ -126,3 +126,18 @@ ggplot(dados_boot_ci, aes(genero, ymin = lower, ymax = upper)) +
 ```
 
 
+```{r}
+comedia_boot <- bootstrap(comedia$avaliacao_media,
+                             mean, R = 2000)
+comedia_boot_ci <- CI.percentile(comedia_boot, probs = c(.025, .975))
+print("Comedia")
+comedia_boot_ci
+
+acao_boot <- bootstrap(acao$avaliacao_media,
+                             mean, R = 2000)
+acao_boot_ci <- CI.percentile(acao_boot, probs = c(.025, .975))
+print("Ação")
+acao_boot_ci
+
+```
+
