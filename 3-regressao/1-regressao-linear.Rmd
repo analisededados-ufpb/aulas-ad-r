@@ -240,10 +240,10 @@ mario %>%
   ggplot(aes(x = startPr, y = totalPr)) + 
   geom_point(alpha = .5, size = 1)
 
-#mario2 = mario %>% 
-#  filter(startPr > 5)
+mario2 = mario %>% 
+  filter(startPr > 5)
 
-modelo = lm(totalPr ~ startPr, data = mario)
+modelo = lm(totalPr ~ startPr, data = mario2)
 
 tidy(modelo, conf.int = TRUE) %>%
   select(-statistic, -std.error)
